@@ -1,8 +1,25 @@
 module LibGEOS
 
-    using GEOS_jll
     using GeoInterface
     using CEnum
+
+	# Fish the binary dependency via GMT lib (except on Windows where we know it in advance)
+	const gmtlib = Ref{String}()
+	try
+		gmtlib[] = haskey(ENV,"GMT_LIBRARY") ?
+			ENV["GMT_LIBRARY"] : string(chop(read(`gmt --show-library`, String)))
+	catch
+		error("This package can only be installed in systems that have GMT")
+	end
+	@static Sys.iswindows() ?
+		(Sys.WORD_SIZE == 64 ? (const libgeos = "geos_w64") : (const libgeos = "geos_w32")) : 
+		(
+			Sys.isapple() ? libgeos = split(readlines(pipeline(`otool -L $gmtlib`, `grep libgeos-`))[1])[1] :
+			(
+				Sys.isunix() ? libgeos = split(readlines(pipeline(`ldd $gmtlib`, `grep libgeos-`))[1])[3] :
+				error("Don't know how to install this package in this OS.")
+			)
+		)
 
     export  Point, MultiPoint, LineString, MultiLineString, LinearRing, Polygon, MultiPolygon, GeometryCollection,
             parseWKT, geomFromWKT, geomToWKT, readgeom, writegeom,
