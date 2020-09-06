@@ -12,11 +12,11 @@ module LibGEOS
 		error("This package can only be installed in systems that have GMT")
 	end
 	@static Sys.iswindows() ?
-		(Sys.WORD_SIZE == 64 ? (const libgeos = "geos_w64") : (const libgeos = "geos_w32")) : 
+		(Sys.WORD_SIZE == 64 ? (const libgeos = "geos_c_w64") : (const libgeos = "geos_c_w32")) : 
 		(
-			Sys.isapple() ? libgeos = split(readlines(pipeline(`otool -L $gmtlib`, `grep libgeos-`))[1])[1] :
+			Sys.isapple() ? libgeos = split(readlines(pipeline(`otool -L $gmtlib`, `grep libgeos_c`))[1])[1] :
 			(
-				Sys.isunix() ? libgeos = split(readlines(pipeline(`ldd $gmtlib`, `grep libgeos-`))[1])[3] :
+				Sys.isunix() ? libgeos = split(readlines(pipeline(`ldd $gmtlib`, `grep libgeos_c`))[1])[3] :
 				error("Don't know how to install this package in this OS.")
 			)
 		)
